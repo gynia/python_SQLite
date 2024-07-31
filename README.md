@@ -147,5 +147,72 @@ with sq.connect("saper.db") as con:
 И вот после выполнения кода мы увидим в нашей базе данных такую структуру
 ![база данных и типы данных в ней](img/0001.png)
 
+Обратим внимание, команды языка SQL принята писать заглавными буквами, а уже
+все остальное малыми буквами.
+
+В нашем коде есть недостаток, если мы его запустим повторно, то будет ошибка
+Traceback (most recent call last):
+  File "D:\python_projects\python_SQLite\lesson_2.py", line 6, in <module>
+    cur.execute("""CREATE TABLE user (
+sqlite3.OperationalError: table user already exists
+
+Так как мы пытаемся создать таблицу которая уже существует, поэтому 
+перепишем код в таком виде:
+
+```python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+
+    cur.execute("""CREATE TABLE IF NOT EXISTS user (
+    name TEXT,
+    sex INTEGER,
+    old INTEGER,
+    score INTEGER
+    )""")
+```
+То-есть создать таблицу user если она не существует
+В самом простом случае мы можем в самой программе DB Browsr for SQLite
+добавить какие-то данные в таблицу... записать их,
+так же в самой программе можно писать и SQL запросы.
+
+Можно заметить что каждая таблица в SQLite имеет скрытое поле rowid (ROWID)
+в действительности rowid - это уникальный идентификатор для каждой записи 
+в таблице, используя этот rowid можно осуществлять связывание нескольких 
+таблиц между собой.
+
+Есть команда, которая удаляет таблицу на языке SQL.
+```python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+    cur.execute("DROP TABLE user")
+```
+"DROP TABLE IF EXISTS user" - или так что-бы удалять если существует таблица user
+
+
+Так же при создании полей таблиц можно указывать так называемые "ограничители"
+ - что-бы поле не могло быть пустым используют NOT NULL
+ - что-бы задать какое-либо значение по умолчанию используют DEFAULT 1
+ - так же можно указывать несколько ограничителей сразу
+ - значения поля являются "главный ключ" (уникальные значения) используют PRIMARY KEY
+ - для автоматического добавления значений в "главный ключ" используют AUTOINCREMENT
+
+
+```python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+    cur.execute("""CREATE TABLE IF NOT EXISTS user (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT
+    name TEXT NOT NULL,
+    sex INTEGER NOT NULL DEFAULT 1,
+    old INTEGER,
+    score INTEGER
+    )""")
+```
 
 
