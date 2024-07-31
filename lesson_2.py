@@ -1,4 +1,4 @@
-import _sqlite3 as sq
+import sqlite3 as sq
 
 with sq.connect("saper.db") as con:
     cur = con.cursor()
@@ -8,5 +8,12 @@ with sq.connect("saper.db") as con:
     sex INTEGER,
     old INTEGER,
     score INTEGER
-    
     )""")
+
+# con = sq.connect("saper.db")
+# cur = con.cursor()
+# cur.execute("""
+# """)
+# con.close()
+
+
