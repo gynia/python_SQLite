@@ -93,6 +93,180 @@ SELECT * FROM user WHERE score >= 1000
 ```
 ![Команда SELECT](img/0010.png)
 
+Отдельный вопрос, где хранит файлы программа DBeaver:
+
+C:\Users\auram\AppData
+\Local\Packages\DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y
+\LocalCache\Roaming\DBeaverData\workspace6\General\Scripts
+
+В качестве сравнений в SQL можно использовать:
+
+ - Равно (=) или (==) проверка на равенство
+ - Больше, больше или равно это (>)(>=)
+ - Меньше, меньше или равно это (<)(<=)
+ - Не равно это (!=)
+ - между это BETWEEN
+
+Например, выберем все записи у которых количество очков лежит в 
+интервале от 500 до 1000
+
+```SQL
+SELECT * FROM user WHERE score BETWEEN 500 AND 1000
+```
+
+На практике часто требуется использовать в условии (фильтре) 
+учитывать значения несколько столбцов
+Например мы хотим выбрать игроков, 
+старше 20-и лет и с числом очков больше 300
+
+Тут уже нужно использовать составное условие, для этого используют другие 
+ключевые слова:
+
+ - NOT условное НЕ
+ - AND это условное И
+ - OR условное ИЛИ
+
+ - IN проверка вхождения во множество значений
+ - NOT IN - проверка невхождения во множество
+
+Приоритет у этих условий именно как тут указан самый высокий у NOT
+
+![Команда SELECT](img/0011.png)
+
+```SQL
+SELECT * FROM user WHERE score < 1000 AND old > 20
+```
+![Команда SELECT](img/0012.png)
+
+Так же в выборке можно выполнять сортировку при помощи ORDER BY
+```SQL
+SELECT * FROM user 
+WHERE old IN (19, 32) AND score <= 1000 OR sex = 1
+ORDER BY old
+```
+```SQL
+SELECT * FROM user 
+WHERE old IN (19, 32) AND score <= 1000 OR sex = 1
+ORDER BY old ASC 
+```
+Тут сортировка выполнится по полю old (возраст) в порядке возрастания возраста
+используется по умолчанию ASC (можно не указывать ключевое слово)
+Если нам нужно в порядке убывания то применяют DESC
+
+```SQL
+SELECT * FROM user 
+WHERE old IN (19, 32) AND score <= 1000 OR sex = 1
+ORDER BY old DESC 
+```
+![Команда SELECT](img/0013.png)
+![Команда SELECT](img/0014.png)
+
+Последнее, что мы тут рассмотрим это оператор LIMIT
+Который говорит сколько записей мы будем отбирать из нашей выборки 
+То-есть ограничение количества выводимых строк из всей выборки
+
+Cинтаксис LIMIT
+LIMITED <max> [OFFSET ofset]
+
+ - max это число записей которые мы хотим видеть в нашей выборке
+ - OFFSET ofset (OFFSET ключевое слово)(offset число записей которые мы пропустим вначале)
+
+Или записывают еще так:
+LIMIT <offset, max>
+
+```SQL
+SELECT * FROM user 
+WHERE old IN (19, 32) AND score <= 1000 OR sex = 1
+ORDER BY old ASC
+LIMIT 2
+```
+
+Видим вместо 3-х только 2-е строчки 
+![Команда SELECT](img/0015.png)
+
+Для примера выберем всех игроков у которых более 100 очков отсортируем их
+по количеству очков и разное количество записей выведем
+
+Тут просто 5 первых записей
+![Команда SELECT](img/0016.png)
+
+Тут тоже пять записей, но пропустив 2-е первые записи
+![Команда SELECT](img/0017.png)
+
+И то же самое, но другим синтаксисом
+![Команда SELECT](img/0018.png)
+
+```SQL
+SELECT * FROM user 
+WHERE score > 100 
+ORDER BY score DESC 
+LIMIT 2, 5
+```
+
+Ну и конечно же все это можно делать на языке Python:
+
+```Python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+    cur.execute("SELECT * FROM user WHERE score > 100 ORDER BY score DESC LIMIT 5")
+    result = cur.fetchall()
+    print(result)
+```
+Делаем как на предыдущем занятии сразу через, контекстный менеджер with,
+
+Затем, создаем экземпляр класса Cursor()
+
+Выполняем запрос к базе данных через этот "курсор"
+
+Далее у этого "курсора" выполняем метод fetchall()
+для получения результата отбора SQL запроса 
+
+Наша переменная result будет ссылаться на упорядоченный список
+состоящий из кортежей с данными из таблицы
+![Команда SELECT](img/0019.png)
 
 
+Можем перебирать этот список и делать с ним то что нам нужно
+
+Например, будем перебирать итерируемый объект cur и выводить
+результат который в нем
+
+```Python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+    cur.execute("SELECT * FROM user WHERE score > 100 ORDER BY score DESC LIMIT 5")
+    for result in cur:
+        print(result)
+```
+![Команда SELECT](img/0020.png)
+
+Такой вариант наиболее предпочтителен, когда количество записей 
+может быть очень велико, мы не будем создавать в памяти весь 
+список из элементов, а выбираем последовательно записи из базы данных
+тем самым экономим память.
+
+
+Рассмотрим еще 2-а метода объекта класса Cursor :
+ - fetchall() - возвращаем список из кортежей с данными из таблицы
+ - fetchmany(size) - возвращает число записей не более size
+ - fetchone() - возвращает только первую запись.
+
+```Python
+import sqlite3 as sq
+
+with sq.connect("saper.db") as con:
+    cur = con.cursor()
+    cur.execute("SELECT * FROM user WHERE score > 100 ORDER BY score DESC LIMIT 5")
+    result = cur.fetchone()
+    result2 = cur.fetchmany(2)
+    print(result)
+    print(result2)
+```
+![Команда SELECT](img/0021.png)
+
+Тут мы рассмотрели только базовый функционал команды SELECT
 
